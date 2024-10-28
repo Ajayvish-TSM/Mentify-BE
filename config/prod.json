@@ -1,61 +1,59 @@
 {
-    "Database": {
-      "URL": "mongodb+srv://root:root@cluster0.zrcta9n.mongodb.net/",
-      "Debug": true,
-      "dbName": "peopleroot",
-      "SSL_CERT": "",
-      "Type": "Normal",
-      "dcDisableHooks": false
-    },
-    "SecureAccess": {
-      "whitelistDomains": [],
-      "enable": false
-    },
-    "App": {
-      "PORT": 5203,
-      "Miles": 2,
-      "PaginateLimit": 30,
-      "RequestExpireTime": 3,
-      "tokenExpiresTime": "2000d",
-      "host": "http://localhost:8043/",
-      "WebHost": "http://localhost/",
-      "secret": "test",
-      "SiteName": "",
-      "SiteSortName": ""
-    },
-    "SMTP": {
-      "From": "Vidyame team",
-      "FromEmail": "s******@gmail.com",
-      "Host": "smtp.gmail.com",
-      "Service": "gmail",
-      "User": "samir.vidyame@gmail.com",
-      "Password": "dpcfqdnnxnfrlszd"
-    },
-    "AWS": {
-      "AccessKey": "AKIAVTQIEEOG5Y6E532Y",
-      "SecretKey": "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",
-      "BucketName": "arqosh",
-      "region": "ap-south-1",
-      "S3Path": "https://arqosh.s3.ap-south-1.amazonaws.com/",
-      "SQS": {
-        "queueURL": "https://sqs.ap-south-1.amazonaws.com/249345467566/dev-email-queue"
-      }
-    },
-    "Twillo": {
-      "AccountSID": "",
-      "AuthToken": "",
-      "From": ""
-    },
-    "CronTask": {
-      "nextDelay": 10,
-      "idleDelay": 1000
-    },
-    "Agora": {
-      "appID": "",
-      "appCertificate": "",
-      "channelName": "",
-      "account ": ""
+  "Database": {
+    "URL": "mongodb+srv://root:root@cluster0.zrcta9n.mongodb.net/",
+    "Debug": true,
+    "dbName": "peopleroot",
+    "SSL_CERT": "",
+    "Type": "Normal",
+    "dcDisableHooks": false
+  },
+  "SecureAccess": {
+    "whitelistDomains": [],
+    "enable": false
+  },
+  "App": {
+    "PORT": 5203,
+    "Miles": 2,
+    "PaginateLimit": 30,
+    "RequestExpireTime": 3,
+    "tokenExpiresTime": "2000d",
+    "host": "http://localhost:8043/",
+    "WebHost": "http://localhost/",
+    "secret": "test",
+    "SiteName": "",
+    "SiteSortName": ""
+  },
+  "SMTP": {
+    "From": "Vidyame team",
+    "FromEmail": "s******@gmail.com",
+    "Host": "smtp.gmail.com",
+    "Service": "gmail",
+    "User": "samir.vidyame@gmail.com",
+    "Password": "dpcfqdnnxnfrlszd"
+  },
+  "AWS": {
+    "AccessKey": "AKIAVTQIEEOG5Y6E532Y",
+    "SecretKey": "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",
+    "BucketName": "arqosh",
+    "region": "ap-south-1",
+    "S3Path": "https://arqosh.s3.ap-south-1.amazonaws.com/",
+    "SQS": {
+      "queueURL": "https://sqs.ap-south-1.amazonaws.com/249345467566/dev-email-queue"
     }
+  },
+  "Twillo": {
+    "AccountSID": "",
+    "AuthToken": "",
+    "From": ""
+  },
+  "CronTask": {
+    "nextDelay": 10,
+    "idleDelay": 1000
+  },
+  "Agora": {
+    "appID": "",
+    "appCertificate": "",
+    "channelName": "",
+    "account ": ""
   }
-  
-  
+}
