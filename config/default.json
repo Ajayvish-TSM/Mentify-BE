@@ -1,8 +1,8 @@
 {
   "Database": {
-    "URL": "mongodb://localhost:27017/tajurba",
+    "URL": "mongodb://localhost:27019/kaiju",
     "Debug": true,
-    "dbName": "tajurba",
+    "dbName": "kaiju",
     "SSL_CERT": "",
     "Type": "Normal",
     "dcDisableHooks": false
