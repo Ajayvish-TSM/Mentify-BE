@@ -788,7 +788,7 @@ const login = async function (data) {
         message: "Email is not exist.",
       };
     }
-
+    console.log("logoin dataas", data);
     return data;
   } catch (error) {
     userLogger.info(__filename, "Login catch block ---->  ," + error);

@@ -125,14 +125,16 @@ const callingCommand = async (data, authData) => {
     __filename,
     `In function(callingCommand(data) command = ${data.command}`
   );
+  console.log("calling cammand", data);
   const commands = data.command;
   let fullData = [];
   for (let key in commands) {
     console.log("Default ", "../../" + configModule[commands[key]["agent"]]);
     const agent = require("../../" + configModule[commands[key]["agent"]]);
     const agentObj = new agent();
-    console.log(data);
+    console.log("agent baba", agentObj);
     data = await agentObj.process(data, authData);
+    console.log("agent + data", data);
     //console.log(JSON.stringify(data)+'data inside pipeline');
     if (data.response.code != 1) {
       userLogger.error(

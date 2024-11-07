@@ -1,6 +1,6 @@
 {
   "Database": {
-    "URL": "mongodb://localhost:27017/Mentify",
+    "URL": "mongodb://localhost:27017/Mentifys",
     "Debug": true,
     "dbName": "Mentify",
     "SSL_CERT": "",
