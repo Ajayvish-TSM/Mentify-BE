@@ -43,5 +43,6 @@ const configModule = {
   leave_create_list: "module/controller/leave_management/leave_create_list",
   leave_credit: "module/controller/leave_management/leave_credit",
   holiday_create: "module/controller/holiday/holiday_create",
+  attendance: "module/controller/attendance/attendance",
 };
 module.exports = configModule;
