@@ -30,5 +30,12 @@ class leave_application {
     );
     return response;
   }
+  async get_moderator_application(data, authData) {
+    let response = await leaveApplicationService.get_moderator_application(
+      data,
+      authData
+    );
+    return response;
+  }
 }
 module.exports = leave_application;
