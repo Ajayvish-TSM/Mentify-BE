@@ -1,3 +1,4 @@
+const leave_application = require("./controller/leaveApplication/leave_application");
 const { leave_create_list } = require("./services/leaveService");
 
 const configModule = {
@@ -44,5 +45,6 @@ const configModule = {
   leave_credit: "module/controller/leave_management/leave_credit",
   holiday_create: "module/controller/holiday/holiday_create",
   attendance: "module/controller/attendance/attendance",
+  leave_application: "module/controller/leaveApplication/leave_application",
 };
 module.exports = configModule;

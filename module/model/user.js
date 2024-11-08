@@ -29,6 +29,7 @@ const UsersSchema = Mongoose.Schema(
       ref: "User",
       default: null,
     },
+    employee_type: { type: String },
     modified_date: { type: Date, default: null },
     created_by: {
       type: Schema.Types.ObjectId,
