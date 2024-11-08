@@ -95,8 +95,77 @@ const get_holiday_list = async function (data, authData) {
     return data;
   }
 };
+const update_holiday_list = async (data, authData) => {
+  try {
+    const decoded = Auth.decodeToken(authData);
+
+    if (
+      decoded?.usertype_in === false &&
+      decoded?.is_active === false &&
+      decoded?.deleted_date !== null
+    ) {
+      data.response = {
+        status: 0,
+        message: "You are not a valid user!!",
+      };
+      return data;
+    }
+
+    // Ensure that the action and command fields are not part of the update
+    delete data["action"];
+    delete data["command"];
+
+    // Ensure holiday ID is provided in the data
+    if (!data.holiday_id) {
+      data.response = {
+        status: 0,
+        message: "Holiday ID is required for update.",
+      };
+      return data;
+    }
+
+    // Update the holiday document in the collection
+    const updated_data = await Models.holidayCreate.findByIdAndUpdate(
+      data.holiday_id,
+      {
+        holiday_name: data.holiday_name,
+        holiday_date: data.holiday_date,
+        is_compulsory: data.is_compulsory,
+      },
+      { new: true } // This option returns the updated document
+    );
+
+    // Check if the update was successful
+    if (updated_data) {
+      data.response = {
+        status: 200,
+        result: STATUS.SUCCESS,
+        data: updated_data,
+        message: "Data updated successfully.",
+      };
+    } else {
+      data.response = {
+        status: 0,
+        result: STATUS.ERROR,
+        message: "Data not updated. Holiday ID may not exist.",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.log("Error updating holiday ------------>  ", error);
+    data.response = {
+      status: 0,
+      result: STATUS.ERROR,
+      message: "Something went wrong",
+      error: error,
+    };
+    return data;
+  }
+};
 
 module.exports = {
   create,
   get_holiday_list,
+  update_holiday_list,
 };

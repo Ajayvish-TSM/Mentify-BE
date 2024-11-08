@@ -21,5 +21,9 @@ class holiday_create {
     let response = await holidayService.get_holiday_list(data, authData);
     return response;
   }
+  async update_holiday_list(data, authData) {
+    let response = await holidayService.update_holiday_list(data, authData);
+    return response;
+  }
 }
 module.exports = holiday_create;

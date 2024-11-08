@@ -9,8 +9,6 @@ class createAdminUser {
       data["command"][0]["function"] != "" &&
       typeof this[data["command"][0]["function"]] === "function"
     ) {
-      console.log("create admin se hu", data["command"][0]["function"]);
-      console.log("function name janna h", this[function_name]);
       var function_name = data["command"][0]["function"];
       let result = await this[function_name](data, authData);
       return result;

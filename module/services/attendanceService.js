@@ -21,8 +21,8 @@ const create = async (data, authData) => {
 
     // Office coordinates
     const officeCoordinates = {
-      latitude: 18.58265580355502,
-      longitude: 73.72666081349308,
+      latitude: 18.5824375,
+      longitude: 73.7263487,
     };
 
     // Function to calculate distance between two latitude/longitude points
@@ -38,7 +38,7 @@ const create = async (data, authData) => {
           (1 - Math.cos(dLon))) /
           2;
       const distance = R * 2 * Math.asin(Math.sqrt(a)); // Distance in km
-      return distance * 1000; // Convert to meters
+      return distance; // Convert to meters
     }
 
     // Calculate distance between user and office
