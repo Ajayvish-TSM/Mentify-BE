@@ -6,6 +6,7 @@ const CreditLeaveSchema = new Mongoose.Schema({
     ref: "User",
     required: true,
   }, // User receiving the leave
+  user_name: { type: Mongoose.Schema.Types.String, ref: "User" },
   assigned_leaves: { type: Number, required: true }, // Number of leaves assigned
   assigned_by: { type: Mongoose.Schema.Types.ObjectId, ref: "User" }, // Admin who assigned the leave
   assigned_date: { type: Date, default: Date.now },
