@@ -20,7 +20,14 @@ class create {
       console.log(e);
     }
   }
-
+  // async update_leave_create(data,authData){
+  //   try{
+  //      let response = await leaveService.update_leave_create(data,authData);
+  //      return response
+  //   }catch(e){
+  //     console.log(e)
+  //   }
+  // }
   // async get_list(data, authData) {
   //   try {
   //     let response = await leaveService.get_list(data, authData);

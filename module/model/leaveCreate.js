@@ -6,7 +6,6 @@ const LeaveSchema = new Mongoose.Schema(
   {
     leave_name: { type: String },
     leave_code: { type: String, unique: true },
-    leaves: { type: Number },
     created_by: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {
