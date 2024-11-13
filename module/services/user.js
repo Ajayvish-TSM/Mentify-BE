@@ -1925,6 +1925,7 @@ const admin_user_list = async function (data, authData) {
               mobile_no: 1,
               is_active: 1,
               role_id: 1,
+              reporting_to: 1,
             },
           },
           {
@@ -1966,6 +1967,7 @@ const admin_user_list = async function (data, authData) {
               user_id: 1,
               usertype_in: 1,
               deleted_date: 1,
+              reporting_to: 1,
             },
           },
           {

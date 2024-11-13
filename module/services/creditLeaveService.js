@@ -2,24 +2,37 @@ const create = async (data, authData) => {
   try {
     const decoded = Auth.decodeToken(authData);
 
+    // Validate the user's authentication and permissions
     if (
-      decoded?.usertype_in === false &&
-      decoded?.is_active === false &&
+      !decoded?.usertype_in ||
+      !decoded?.is_active ||
       decoded?.deleted_date !== null
     ) {
       data.response = {
         status: 0,
-        message: "You are not valid user!!",
+        message: "You are not a valid user!",
       };
       return data;
     }
 
+    // Ensure required fields are present, including leaveType
+    if (!data.leaveType || !["credit", "debit"].includes(data.leaveType)) {
+      data.response = {
+        status: 0,
+        message: "Invalid leave type provided.",
+      };
+      return data;
+    }
+
+    // Clean up the input data
     delete data["action"];
     delete data["command"];
 
-    let saved_data = await Models.creditLeave(data).save();
+    // Create a new leave entry in the database
+    const saved_data = await new Models.creditLeave(data).save();
 
-    if (saved_data != null) {
+    // Prepare response based on save result
+    if (saved_data) {
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
@@ -36,16 +49,17 @@ const create = async (data, authData) => {
 
     return data;
   } catch (error) {
-    console.log("error  invoice ------------>  ", error);
+    console.log("Error creating leave record: ", error);
     data.response = {
       status: 0,
       result: STATUS.ERROR,
-      message: "Something is wrong",
+      message: "Something went wrong",
       error: error,
     };
     return data;
   }
 };
+
 const get_credit_list = async function (data, authData) {
   try {
     // Decode the token to verify the user's authentication
