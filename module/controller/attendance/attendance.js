@@ -1,3 +1,4 @@
+const auth = require("../../middleware/auth");
 const attendanceService = require("../../services/attendanceService");
 
 class attendance {
@@ -16,6 +17,13 @@ class attendance {
       let response = await attendanceService.create(data, authData);
       return response;
     }
+  }
+  async get_attendance_list_id(data, authData) {
+    let response = await attendanceService.get_attendance_list_id(
+      data,
+      authData
+    );
+    return response;
   }
 }
 module.exports = attendance;
