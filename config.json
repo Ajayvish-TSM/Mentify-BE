@@ -11,15 +11,15 @@
     "password": "password"
   },
   "MAIL": {
-    "SENDER_EMAIL": "noreplay@qodequay.com",
-    "SENDER_NAME": "Tajurba Team",
-    "USER": "rahultajurba@gmail.com",
-    "PASSWORD": "pjyieyxnnhczmfiu",
+    "SENDER_EMAIL": "ajayvish936@gmail.com",
+    "SENDER_NAME": "TSM Team",
+    "USER": "ajayvish936@gmail.com",
+    "PASSWORD": "umpxzhqipxgtmiws",
     "HOST": "smtp.gmail.com",
-    "PORT": "587"
+    "PORT": "465"
   },
   "FrontendForgotPassword": {
-    "url": "https://server.qodequay.com/tajurba/dev/admin#/new-password-user/"
+    "url": "http://localhost:3000/tajurba/dev/admin#/new-password-user/"
   },
 
   "CipherKey": "85720180b219a7bc0bd9177e2e884d5b505b87900e8bcba9cf0fae45e03efb0d",
@@ -49,14 +49,7 @@
     "SiteName": "",
     "SiteSortName": ""
   },
-  "SMTP": {
-    "From": "Vidyame team",
-    "FromEmail": "s******@gmail.com",
-    "Host": "smtp.gmail.com",
-    "Service": "gmail",
-    "User": "samir.vidyame@gmail.com",
-    "Password": "dpcfqdnnxnfrlszd"
-  },
+
   "AWS": {
     "AccessKey": "AKIAVTQIEEOG6XHZIEMD",
     "SecretKey": "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",

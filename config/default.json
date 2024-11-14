@@ -24,12 +24,12 @@
     "SiteSortName": ""
   },
   "SMTP": {
-    "From": "Vidyame team",
-    "FromEmail": "v******@gmail.com",
+    "From": "TSM Team",
+    "FromEmail": "ajayvish936@gmail.com",
     "Host": "smtp.gmail.com",
     "Service": "gmail",
-    "User": "vickynehare.vn1@gmail.com",
-    "Password": "afhcljungpampizj"
+    "User": "ajayvish936@gmail.com",
+    "Password": "Vishh@230501"
   },
   "AWS": {
     "AccessKey": "AKIAVTQIEEOG5Y6E532Y",

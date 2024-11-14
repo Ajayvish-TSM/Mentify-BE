@@ -83,7 +83,6 @@ const get_credit_list = async function (data, authData) {
     // Define base filter; can add specific conditions if needed
     let filterData = {};
 
-    // Retrieve all holidays from the 'Holiday' collection
     const credit_list = await Models.creditLeave
       .find(filterData)
       .sort({ createdAt: -1 })
@@ -91,10 +90,10 @@ const get_credit_list = async function (data, authData) {
       .limit(limit)
       .exec();
     // Get total count for pagination
-    const total_records = await Models.leaveCreate.countDocuments(filterData);
+    const total_records = await Models.creditLeave.countDocuments(filterData);
     // Calculate the number of pages
     const total_pages = Math.ceil(total_records / limit);
-    // If there are holidays, return the data
+
     if (credit_list.length > 0) {
       data.response = {
         status: 200,

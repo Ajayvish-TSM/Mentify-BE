@@ -2062,6 +2062,7 @@ const admin_user_list = async function (data, authData) {
 const createAdminUser = async function (data, authData) {
   userLogger.info(__filename, "create user request ---->  ," + data);
   const decoded = Auth.decodeToken(authData);
+
   if (
     decoded.usertype_in == false ||
     decoded.is_active == false ||
@@ -2074,8 +2075,10 @@ const createAdminUser = async function (data, authData) {
     };
     return data;
   }
+
   delete data["action"];
   delete data["command"];
+
   let record = await Models.user.findOne({ email: data.email }).exec();
   if (record && data.user_id == undefined) {
     data.response = {
@@ -2085,16 +2088,18 @@ const createAdminUser = async function (data, authData) {
     };
 
     io.emit("notification", { message: "Course approved" });
-
     console.log("Course has been approved");
     return data;
   }
-  var adminInfo = data;
+
+  let adminInfo = data;
   if (data.user_id == undefined) {
+    // Create new admin user
     let admin = new Models.user(adminInfo);
-    var savedAdmin = await admin.save();
+    let savedAdmin = await admin.save();
     console.log("create savedAdmin", savedAdmin);
 
+    // Save login details
     let loginObj = {
       email: data?.email,
       user_id: savedAdmin?.user_id,
@@ -2102,69 +2107,92 @@ const createAdminUser = async function (data, authData) {
     let login = new Models.login(loginObj);
     const savedLogin = await login.save();
 
-    let idToString = savedAdmin.user_id.toString();
+    // Define server URL for password setup link
+    const server_url =
+      prjConfig.FrontendForgotPassword.url +
+      Buffer.from(data.email).toString("base64");
 
-    // const server_url = window.location.protocol + '//' + window.location.host;
+    console.log("server_url:", server_url);
 
-    // console.log(server_url);
-
-    // let server_url =
-    //   prjConfig.FrontendForgotPassword.url +
-    //   Buffer.from(data.email).toString("base64");
-
-    // var template = tpl.fetch(
-    //   __dirname + "../../system/template/admin_registration.tpl"
+    // Load email template
+    // const templatePath = path.join(
+    //   __dirname,
+    //   "../../system/template/admin_registration.tpl"
     // );
+    // var template = tpl.fetch(templatePath);
+    const templatePath = path.join(
+      __dirname,
+      "../../system/template/admin_registration.tpl"
+    );
 
-    // const mailObj = new mail();
-    // template = template.replace("${server_url}", server_url);
-    // template = template.replace("${first_name}", data.first_name);
+    let template;
+    try {
+      template = Fs.readFileSync(templatePath, "utf8"); // Ensure the encoding is set to "utf8"
+      console.log("Template content:", template);
+    } catch (error) {
+      console.error("Error reading the template file:", error);
+    }
+    console.log("jhelel", template);
 
-    // const mailResponse = await mailObj.sendMail({
-    //   from: `${prjConfig.MAIL.SENDER_NAME} <${prjConfig.MAIL.SENDER_EMAIL}>`,
-    //   to: data?.email, // "bar@example.com, baz@example.com", // list of receivers
-    //   subject: `Request to change password`, // Subject line
-    //   html: `${template}`, // html body
-    // });
+    // Replace placeholders in template
+    template = template.replace("${server_url}", server_url);
+    template = template.replace("${first_name}", data.first_name);
 
-    data.response = {
-      status: 200,
-      result: STATUS.SUCCESS,
-      data: savedAdmin,
-      message:
-        "Email has been sent to the respective email id for setting up the password.",
-    };
-    return data;
+    try {
+      // Send email
+      const mailObj = new mail();
+      const mailResponse = await mailObj.sendMail({
+        from: "abhayagnihotri1585@gmail.com",
+        to: data.email,
+        subject: "Request to change password",
+        html: template,
+      });
+
+      console.log("Mail Response:", mailResponse);
+
+      data.response = {
+        status: 200,
+        result: STATUS.SUCCESS,
+        data: savedAdmin,
+        message:
+          "Email has been sent to the respective email id for setting up the password.",
+      };
+      return data;
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      data.response = {
+        status: 500,
+        result: STATUS.ERROR,
+        message: "Failed to send email.",
+        error: emailError,
+      };
+      return data;
+    }
   } else {
-    console.log("sudsdushdsavedAdmin");
-    let filter = {
-      user_id: data.user_id,
-    };
-    console.log(adminInfo, "filter");
-    var savedAdmin = await Models.user
-      .findOneAndUpdate(
-        filter,
-        {
-          $set: data,
-        },
-        { new: true }
-      )
+    // Update existing admin user
+    let filter = { user_id: data.user_id };
+    let updatedAdmin = await Models.user
+      .findOneAndUpdate(filter, { $set: data }, { new: true })
       .lean();
-    var user_data = await Models.user
-      .findOne({ user_id: data.user_id, deleted_date: null })
+
+    let user_data = await Models.user
+      .findOne({
+        user_id: data.user_id,
+        deleted_date: null,
+      })
       .exec();
-    var getRole = await Models.role.findOne({ role_id: user_data.role_id });
 
+    let getRole = await Models.role.findOne({ role_id: user_data.role_id });
     user_data.role_details = getRole;
+    updatedAdmin.role_details = user_data.role_details;
 
-    // Add user_details to savedAdmin
-    savedAdmin.role_details = user_data.role_details;
-    console.log(savedAdmin, "user data");
+    console.log("Updated admin user data:", updatedAdmin);
+
     data.response = {
       status: 200,
       result: STATUS.SUCCESS,
-      data: savedAdmin,
-      message: "User updated successully",
+      data: updatedAdmin,
+      message: "User updated successfully",
     };
     return data;
   }
@@ -2427,6 +2455,7 @@ const getUserDetails = async function (data, authData) {
         },
       },
     ]);
+
     data.response = {
       status: 200,
       data: userDetails,

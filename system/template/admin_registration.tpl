@@ -22,7 +22,7 @@
 					Dear ${first_name},
 				</p>
 				<p style="color:#555555;">
-					Thank you for registering with Tajurba. We are thrilled to have you onboard as a valued member of our community!
+					Thank you for registering with TSM. We are thrilled to have you onboard as a valued member of our community!
 				</p>
 				<p style="color:#555555;">
 					Kindly click on the below button to change your password. Once you change your password, you will be able to login to the system 
