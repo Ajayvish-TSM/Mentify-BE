@@ -64,16 +64,35 @@ const get_leave_application = async function (data, authData) {
       };
       return data;
     }
+    const skip = data.limit * (data.page_no - 1);
+    const limit = data.limit;
 
-    // Retrieve all holidays from the 'Holiday' collection
-    const applied_application = await Models.leaveApplication.find({}).exec();
+    // Define the filter for the query based on the provided status in data
+    const filter = {};
+    if (data.status) {
+      filter.status = data.status; // Assuming `status` is provided in data
+    }
 
-    // If there are holidays, return the data
+    // Retrieve leave applications with the specified status
+    const applied_application = await Models.leaveApplication
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+    // Get total count for pagination
+    const total_records = await Models.leaveCreate.countDocuments(filter);
+
+    // Calculate the number of pages
+    const total_pages = Math.ceil(total_records / limit);
+    // If there are applications, return the data
     if (applied_application.length > 0) {
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
-        message: "Applications  found.",
+        total_records: total_records,
+        total_pages: total_pages,
+        message: "Applications found.",
         data: applied_application,
       };
     } else {
@@ -95,6 +114,7 @@ const get_leave_application = async function (data, authData) {
     return data;
   }
 };
+
 const update_leave_application = async (data, authData) => {
   try {
     const decoded = Auth.decodeToken(authData);
@@ -126,7 +146,7 @@ const update_leave_application = async (data, authData) => {
 
     // Update the holiday document in the collection
     const updated_data = await Models.leaveApplication.findByIdAndUpdate(
-      data.application_id,
+      { _id: data.application_id, user_id: data.user_id },
       {
         from_date: data.from_date,
 
@@ -150,7 +170,7 @@ const update_leave_application = async (data, authData) => {
       data.response = {
         status: 0,
         result: STATUS.ERROR,
-        message: "Data not updated. Holiday ID may not exist.",
+        message: " User Id may not exist.",
       };
     }
 

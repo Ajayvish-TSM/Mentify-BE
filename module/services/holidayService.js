@@ -64,15 +64,33 @@ const get_holiday_list = async function (data, authData) {
       };
       return data;
     }
+    // Set pagination parameters
+    const skip = data.limit * (data.page_no - 1);
+    const limit = data.limit;
+
+    // Define base filter; can add specific conditions if needed
+    let filterData = {};
 
     // Retrieve all holidays from the 'Holiday' collection
-    const holiday_list = await Models.holidayCreate.find({}).exec();
+    const holiday_list = await Models.holidayCreate
+      .find(filterData)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+    // Get total count for pagination
+    const total_records = await Models.holidayCreate.countDocuments(filterData);
+
+    // Calculate the number of pages
+    const total_pages = Math.ceil(total_records / limit);
 
     // If there are holidays, return the data
     if (holiday_list.length > 0) {
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
+        total_records: total_records,
+        total_pages: total_pages,
         message: "Holidays found.",
         data: holiday_list,
       };

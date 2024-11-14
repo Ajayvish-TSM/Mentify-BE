@@ -129,17 +129,15 @@ const create = async (data, authData) => {
 // }
 const leave_create_list = async function (data, authData) {
   try {
-    // Logging the request data
     userLogger.info(
       __filename,
-      "leave_create_list process request ---->  ," + data
+      "leave_create_list process request ----> ," + JSON.stringify(data)
     );
 
-    // Decoding the authentication token
     const decoded = Auth.decodeToken(authData);
     if (
-      decoded.usertype_in == false ||
-      decoded.is_active == false ||
+      decoded.usertype_in === false ||
+      decoded.is_active === false ||
       decoded.deleted_date !== null
     ) {
       data.response = {
@@ -150,19 +148,34 @@ const leave_create_list = async function (data, authData) {
       return data;
     }
 
-    // Simplified filter to retrieve all leave data
-    let filterData = {}; // You can add custom filters if necessary
+    // Set pagination parameters
+    const skip = data.limit * (data.page_no - 1);
+    const limit = data.limit;
 
-    // Query to retrieve all leave data
-    var leave_list = await Models.leaveCreate
-      .find(filterData) // No filters applied, fetch all records
+    // Define base filter; can add specific conditions if needed
+    let filterData = {};
+
+    // Query leave data with pagination
+    const leave_list = await Models.leaveCreate
+      .find(filterData)
+      .sort({ createdAt: -1 }) // Sorting by creation date, adjust as needed
+      .skip(skip)
+      .limit(limit)
       .exec();
 
-    // If leave data is found, return it in the response
+    // Get total count for pagination
+    const total_records = await Models.leaveCreate.countDocuments(filterData);
+
+    // Calculate the number of pages
+    const total_pages = Math.ceil(total_records / limit);
+
+    // Prepare response based on query results
     if (leave_list.length > 0) {
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
+        total_records: total_records,
+        total_pages: total_pages,
         data: leave_list,
         message: "Data found.",
       };
@@ -176,21 +189,20 @@ const leave_create_list = async function (data, authData) {
 
     userLogger.info(
       __filename,
-      "leave_create process response ---->  ," + data
+      "leave_create_list process response ----> ," + JSON.stringify(data)
     );
     return data;
   } catch (error) {
-    // Handle any errors
-    userLogger.info(__filename, "leave_create catch block ---->  ," + error);
-    console.log("error      ---------->  ", error);
-    var resp = {
+    userLogger.info(
+      __filename,
+      "leave_create_list catch block ----> ," + error
+    );
+    console.log("Error:", error);
+    data.response = {
       status: 0,
       result: STATUS.ERROR,
-      message: "Something is wrong",
+      message: "Something went wrong",
       error: error,
-    };
-    data.response = {
-      resp,
     };
     return data;
   }

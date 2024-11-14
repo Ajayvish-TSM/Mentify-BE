@@ -77,15 +77,30 @@ const get_credit_list = async function (data, authData) {
       };
       return data;
     }
+    const skip = data.limit * (data.page_no - 1);
+    const limit = data.limit;
+
+    // Define base filter; can add specific conditions if needed
+    let filterData = {};
 
     // Retrieve all holidays from the 'Holiday' collection
-    const credit_list = await Models.creditLeave.find({}).exec();
-
+    const credit_list = await Models.creditLeave
+      .find(filterData)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+    // Get total count for pagination
+    const total_records = await Models.leaveCreate.countDocuments(filterData);
+    // Calculate the number of pages
+    const total_pages = Math.ceil(total_records / limit);
     // If there are holidays, return the data
     if (credit_list.length > 0) {
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
+        total_records: total_records,
+        total_pages: total_pages,
         message: "Credit leave found.",
         data: credit_list,
       };
