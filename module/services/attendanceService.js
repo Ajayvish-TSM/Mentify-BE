@@ -1,4 +1,4 @@
-const auth = require("../middleware/auth");
+const Auth = require("../middleware/auth");
 const Mongoose = require("mongoose");
 const create = async (data, authData) => {
   try {
@@ -23,35 +23,36 @@ const create = async (data, authData) => {
 
     // Office coordinates
     const officeCoordinates = {
-      latitude: 18.5824375,
-      longitude: 73.7263487,
+      latitude: 18.582499725047473,
+      longitude: 73.72627792404252,
     };
 
     // Function to calculate distance between two latitude/longitude points
     const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
-      const R = 6371000; // Radius of the Earth in meters
+      const R = 6371000; // Earth's radius in meters
       const dLat = ((lat2 - lat1) * Math.PI) / 180;
       const dLon = ((lon2 - lon1) * Math.PI) / 180;
-      const a =
-        0.5 -
-        Math.cos(dLat) / 2 +
-        (Math.cos((lat1 * Math.PI) / 180) *
-          Math.cos((lat2 * Math.PI) / 180) *
-          (1 - Math.cos(dLon))) /
-          2;
-      return (R * 2 * Math.asin(Math.sqrt(a))) / 1000; // Distance in meters
-    };
 
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // Distance in meters
+    };
     // Calculate distance between user and office
     const distance = getDistanceFromLatLonInMeters(
-      userLatitude,
-      userLongitude,
+      18.582499725047473,
+      73.72627792404252,
       officeCoordinates.latitude,
       officeCoordinates.longitude
     );
 
     // If the user is outside the 10-meter radius
-    if (distance > 10) {
+    if (distance > 100) {
       data.response = {
         status: 0,
         message: "You are not within the office radius.",
@@ -80,10 +81,6 @@ const create = async (data, authData) => {
         user_id: decoded._id,
         login_time: new Date(),
         status: "logged_in",
-        office_location: {
-          type: "Point",
-          coordinates: [userLongitude, userLatitude], // Save coordinates in [longitude, latitude] format
-        },
       });
       await attendanceRecord.save(); // Save the new record
       data.response = {
@@ -108,7 +105,7 @@ const get_attendance_list_id = async (data, authData) => {
     // Logging the request data
     userLogger.info(
       __filename,
-      "leave_create_list process request ---->  ," + JSON.stringify(data)
+      "attendance_list process request ---->  ," + JSON.stringify(data)
     );
 
     // Decoding the authentication token
@@ -131,7 +128,7 @@ const get_attendance_list_id = async (data, authData) => {
     const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
     const endOfToday = new Date(new Date().setHours(23, 59, 59, 999));
 
-    // Setting up filters to retrieve data based on ID and today's date
+    // Setting up filters to retrieve data based on user ID and today's date
     const filterData = {
       user_id: userId,
       createdAt: {
@@ -140,15 +137,46 @@ const get_attendance_list_id = async (data, authData) => {
       },
     };
 
-    // Query to retrieve leave data based on filters
-    const attendanceList = await Models.Attendance.find(filterData).exec();
+    // Query to retrieve attendance data for today
+    const attendanceList = await Models.Attendance.find(filterData)
+      .sort({ createdAt: 1 }) // Sort by createdAt ascending to get first login first
+      .exec();
 
-    // If leave data is found, return it in the response
+    // If attendance data is found, we need to process it
     if (attendanceList.length > 0) {
+      // Find the first login time and the last logout time
+      const firstLogin = attendanceList.find(
+        (att) => att.status === "logged_in"
+      );
+      const lastLogout = attendanceList
+        .filter((att) => att.status === "logged_out")
+        .pop(); // Get the last logout
+
+      // If both login and logout are found, calculate total hours
+      let totalHours = 0;
+      if (firstLogin && lastLogout) {
+        const firstLoginTime = new Date(firstLogin.createdAt);
+        const lastLogoutTime = new Date(lastLogout.createdAt);
+
+        // Ensure that the firstLoginTime is before the lastLogoutTime
+        if (firstLoginTime < lastLogoutTime) {
+          // Calculate the difference in hours
+          const timeDifference =
+            (lastLogoutTime - firstLoginTime) / 1000 / 3600; // Convert ms to hours
+          totalHours = timeDifference.toFixed(2); // Round to 2 decimal places
+        } else {
+          totalHours = 0; // If the login time is after the logout time, set totalHours to 0
+        }
+      }
+
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
-        data: attendanceList,
+        data: {
+          firstLogin: firstLogin || null, // If no login found, return null
+          lastLogout: lastLogout || null, // If no logout found, return null
+          totalHours: totalHours || 0, // If no valid hours, return 0
+        },
         message: "Data found.",
       };
     } else {
@@ -161,12 +189,12 @@ const get_attendance_list_id = async (data, authData) => {
 
     userLogger.info(
       __filename,
-      "leave_create process response ---->  ," + JSON.stringify(data)
+      "attendance_list process response ---->  ," + JSON.stringify(data)
     );
     return data;
   } catch (error) {
     // Handle any errors
-    userLogger.info(__filename, "leave_create catch block ---->  ," + error);
+    userLogger.info(__filename, "attendance_list catch block ---->  ," + error);
     console.log("error      ---------->  ", error);
     data.response = {
       status: 0,

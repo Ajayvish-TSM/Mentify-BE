@@ -894,21 +894,34 @@ const forgot_password = async function (data) {
           );
         }
 
-        const mailObj = new mail();
-
-        var template = tpl.fetch(
+        const templatePath = path.join(
           __dirname + "/../../system/template/forgot_password.tpl"
         );
+        let template;
+        try {
+          template = Fs.readFileSync(templatePath, "utf8");
+        } catch (error) {
+          console.error("Error reading the template file:", error);
+          data.response = {
+            status: 500,
+            message: "Template file could not be read",
+            error,
+          };
+          return data;
+        }
 
         template = template.replace("${OTP}", random);
         template = template.replace("${first_name}", user_data?.first_name);
-
-        const mailResponse = await mailObj.sendMail({
-          from: `${prjConfig.MAIL.SENDER_NAME} <${prjConfig.MAIL.SENDER_EMAIL}>`,
-          to: user_data.email,
-          subject: `OTP to verify account`,
-          html: template,
-        });
+        try {
+          const mailObj = new mail();
+          const mailResponse = await mailObj.sendMail({
+            from: "raikwar.manjari@gmail.com",
+            // to: user_data.email,
+            to: "ajayvish936@gmail.com",
+            subject: `OTP to verify account`,
+            html: template,
+          });
+        } catch (error) {}
 
         data.response = {
           status: 200,

@@ -14,16 +14,16 @@ const AttendanceSchema = new Mongoose.Schema(
       enum: ["logged_in", "logged_out"],
       default: "logged_out",
     },
-    latitude: { type: Number },
-    longitude: { type: Number },
-    office_location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: { type: [Number], index: "2dsphere" }, // [longitude, latitude]
-    },
+    // latitude: { type: Number },
+    // longitude: { type: Number },
+    // office_location: {
+    //   type: {
+    //     type: String,
+    //     enum: ["Point"],
+    //     default: "Point",
+    //   },
+    //   coordinates: { type: [Number], index: "2dsphere" }, // [longitude, latitude]
+    // },
   },
   {
     timestamps: true,

@@ -1,15 +1,15 @@
+const Mail = require("../../system/mailer/mail");
+const path = require("path");
+const Fs = require("fs");
+const tpl = require("node-tpl");
 const create = async (data, authData) => {
   try {
     const decoded = Auth.decodeToken(authData);
 
-    if (
-      decoded?.usertype_in === false &&
-      decoded?.is_active === false &&
-      decoded?.deleted_date !== null
-    ) {
+    if (!decoded?.usertype_in || !decoded?.is_active || decoded?.deleted_date) {
       data.response = {
         status: 0,
-        message: "You are not valid user!!",
+        message: "You are not a valid user!",
       };
       return data;
     }
@@ -17,31 +17,106 @@ const create = async (data, authData) => {
     delete data["action"];
     delete data["command"];
 
-    let saved_data = await Models.leaveApplication(data).save();
+    const userobj = await Models.user.findById(data.user_id).exec();
+    if (!userobj) {
+      data.response = {
+        status: 404,
+        message: "User not found",
+      };
+      return data;
+    }
 
-    if (saved_data != null) {
+    const reportingToId = userobj.reporting_to;
+
+    const reportingUser = await Models.user.findById(reportingToId).exec();
+    if (!reportingUser) {
+      data.response = {
+        status: 404,
+        message: "Reporting user not found",
+      };
+      return data;
+    }
+
+    const templatePath = path.join(
+      __dirname,
+      "../../system/template/apply_leave.tpl"
+    );
+
+    let template;
+    try {
+      template = Fs.readFileSync(templatePath, "utf8");
+    } catch (error) {
+      console.error("Error reading the template file:", error);
+      data.response = {
+        status: 500,
+        message: "Template file could not be read",
+        error,
+      };
+      return data;
+    }
+    template = template.replace(
+      "${reporting_manager_name}",
+      reportingUser.first_name
+    );
+    template = template.replace("${employee_name}", userobj.first_name);
+    template = template.replace("${leave_code}", data.leave_code);
+    template = template.replace("${from_date}", data.from_date);
+    template = template.replace("${to_date}", data.to_date);
+    template = template.replace("${leave_reason}", data.leave_reason);
+
+    try {
+      const mailObj = new Mail();
+      const mailResponse = await mailObj.sendMail({
+        from: userobj.email,
+        to: "raikwar.manjari@gmail.com",
+        subject: "Leave Apply",
+        html: template,
+      });
+
+      console.log("Mail Response:", mailResponse);
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      data.response = {
+        status: 500,
+        message: "Failed to send email.",
+        error: emailError,
+      };
+      return data;
+    }
+
+    const leaveData = {
+      user_id: data.user_id,
+      from_date: data.from_date,
+      to_date: data.to_date,
+      leave_code: data.leave_code,
+      leave_reason: data.leave_reason,
+      status: data.status,
+    };
+
+    try {
+      const savedData = await Models.leaveApplication(leaveData).save();
       data.response = {
         status: 200,
         result: STATUS.SUCCESS,
-        data: saved_data,
+        data: savedData,
         message: "Data stored successfully.",
       };
-    } else {
+    } catch (saveError) {
+      console.error("Error saving data:", saveError);
       data.response = {
-        status: 0,
-        result: STATUS.ERROR,
-        message: "Data not stored.",
+        status: 500,
+        message: "Data could not be stored.",
+        error: saveError,
       };
     }
 
     return data;
   } catch (error) {
-    console.log("error  invoice ------------>  ", error);
+    console.error("An unexpected error occurred:", error);
     data.response = {
-      status: 0,
-      result: STATUS.ERROR,
-      message: "Something is wrong",
-      error: error,
+      status: 500,
+      message: "Something went wrong.",
+      error,
     };
     return data;
   }
@@ -135,7 +210,6 @@ const update_leave_application = async (data, authData) => {
     delete data["action"];
     delete data["command"];
 
-    // Ensure holiday ID is provided in the data
     if (!data.application_id) {
       data.response = {
         status: 0,
@@ -143,8 +217,72 @@ const update_leave_application = async (data, authData) => {
       };
       return data;
     }
+    const leaveApplication = await Models.leaveApplication.findById(
+      data.application_id
+    );
+    if (!leaveApplication) {
+      data.response = {
+        status: 0,
+        message: "No record found",
+      };
+      return data;
+    }
+    const userobj = await Models.user.findById(data.user_id).exec();
+    if (!userobj) {
+      data.response = {
+        status: 404,
+        message: "User not found",
+      };
+      return data;
+    }
 
-    // Update the holiday document in the collection
+    const templatePath = path.join(
+      __dirname,
+      "../../system/template/approve_leave.tpl"
+    );
+
+    let template;
+    try {
+      template = Fs.readFileSync(templatePath, "utf8");
+    } catch (error) {
+      console.error("Error reading the template file:", error);
+      data.response = {
+        status: 500,
+        message: "Template file could not be read",
+        error,
+      };
+      return data;
+    }
+
+    template = template.replace("${user_name}", userobj.first_name);
+    template = template.replace("${status", data.status);
+    template = template.replace("${from_date}", leaveApplication.from_date);
+    template = template.replace("${to_date}", leaveApplication.to_date);
+    template = template.replace(
+      "${leave_reason}",
+      leaveApplication.leave_reason
+    );
+
+    try {
+      const mailObj = new Mail();
+      const mailResponse = await mailObj.sendMail({
+        from: userobj.email,
+        to: "raikwar.manjari@gmail.com",
+        subject: "Leave Apply",
+        html: template,
+      });
+
+      console.log("Mail Response:", mailResponse);
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      data.response = {
+        status: 500,
+        message: "Failed to send email.",
+        error: emailError,
+      };
+      return data;
+    }
+
     const updated_data = await Models.leaveApplication.findByIdAndUpdate(
       { _id: data.application_id, user_id: data.user_id },
       {
