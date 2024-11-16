@@ -102,7 +102,6 @@ const create = async (data, authData) => {
 };
 const get_attendance_list_id = async (data, authData) => {
   try {
-    // Logging the request data
     userLogger.info(
       __filename,
       "attendance_list process request ---->  ," + JSON.stringify(data)
@@ -122,50 +121,72 @@ const get_attendance_list_id = async (data, authData) => {
       };
       return data;
     }
+
     const userId = new Mongoose.Types.ObjectId(decoded._id);
 
-    // Setting up filters to retrieve data based on user ID and today's date
+    // Set today's date range
     const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
     const endOfToday = new Date(new Date().setHours(23, 59, 59, 999));
 
-    // Setting up filters to retrieve data based on user ID and today's date
+    // Filters to retrieve attendance data for today
     const filterData = {
       user_id: userId,
       createdAt: {
-        $gte: startOfToday, // Start of today
-        $lte: endOfToday, // End of today
+        $gte: startOfToday,
+        $lte: endOfToday,
       },
     };
 
-    // Query to retrieve attendance data for today
+    // Retrieve attendance data
     const attendanceList = await Models.Attendance.find(filterData)
-      .sort({ createdAt: 1 }) // Sort by createdAt ascending to get first login first
+      .sort({ createdAt: 1 })
       .exec();
 
-    // If attendance data is found, we need to process it
     if (attendanceList.length > 0) {
-      // Find the first login time and the last logout time
       const firstLogin = attendanceList.find(
         (att) => att.status === "logged_in"
       );
       const lastLogout = attendanceList
         .filter((att) => att.status === "logged_out")
-        .pop(); // Get the last logout
+        .pop();
 
-      // If both login and logout are found, calculate total hours
+      // Automatically log out at midnight if user hasn't logged out
+      if (firstLogin && !lastLogout) {
+        const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
+
+        // Insert an automatic logout entry
+        await Models.Attendance.create({
+          user_id: userId,
+          status: "logged_out",
+          createdAt: endOfDay,
+        });
+
+        // Re-fetch the updated data
+        attendanceList.push({
+          user_id: userId,
+          status: "logged_out",
+          createdAt: endOfDay,
+        });
+      }
+
+      // Recalculate total hours
+      const updatedFirstLogin = attendanceList.find(
+        (att) => att.status === "logged_in"
+      );
+      const updatedLastLogout = attendanceList
+        .filter((att) => att.status === "logged_out")
+        .pop();
+
       let totalHours = 0;
-      if (firstLogin && lastLogout) {
-        const firstLoginTime = new Date(firstLogin.createdAt);
-        const lastLogoutTime = new Date(lastLogout.createdAt);
-
-        // Ensure that the firstLoginTime is before the lastLogoutTime
+      if (updatedFirstLogin && updatedLastLogout) {
+        const firstLoginTime = new Date(updatedFirstLogin.createdAt);
+        const lastLogoutTime = new Date(updatedLastLogout.createdAt);
         if (firstLoginTime < lastLogoutTime) {
-          // Calculate the difference in hours
-          const timeDifference =
-            (lastLogoutTime - firstLoginTime) / 1000 / 3600; // Convert ms to hours
-          totalHours = timeDifference.toFixed(2); // Round to 2 decimal places
-        } else {
-          totalHours = 0; // If the login time is after the logout time, set totalHours to 0
+          totalHours = (
+            (lastLogoutTime - firstLoginTime) /
+            1000 /
+            3600
+          ).toFixed(2);
         }
       }
 
@@ -173,9 +194,9 @@ const get_attendance_list_id = async (data, authData) => {
         status: 200,
         result: STATUS.SUCCESS,
         data: {
-          firstLogin: firstLogin || null, // If no login found, return null
-          lastLogout: lastLogout || null, // If no logout found, return null
-          totalHours: totalHours || 0, // If no valid hours, return 0
+          firstLogin: updatedFirstLogin || null,
+          lastLogout: updatedLastLogout || null,
+          totalHours: totalHours || 0,
         },
         message: "Data found.",
       };
@@ -193,7 +214,6 @@ const get_attendance_list_id = async (data, authData) => {
     );
     return data;
   } catch (error) {
-    // Handle any errors
     userLogger.info(__filename, "attendance_list catch block ---->  ," + error);
     console.log("error      ---------->  ", error);
     data.response = {
