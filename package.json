@@ -16,7 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "@shopify/shopify-api": "^6.2.0",
-    "@shopify/shopify-app-express": "^1.2.2",
+    "@shopify/shopify-app-express": "^5.0.10",
     "@shopify/shopify-app-session-storage-mysql": "^1.1.2",
     "assert": "^2.0.0",
     "aws-sdk": "^2.1279.0",
