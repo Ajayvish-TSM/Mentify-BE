@@ -49,7 +49,7 @@
     "number-to-words": "^1.2.4",
     "path": "^0.12.7",
     "puppeteer": "^22.3.0",
-    "razorpay": "^2.9.3",
+    "razorpay": "^2.9.4",
     "request-promise": "^4.2.6",
     "shortid": "^2.2.16",
     "socket.io": "^4.7.2",
